@@ -1,0 +1,187 @@
+import java.util.*;
+
+ArrayList<Node> nodes = new ArrayList<Node>();
+ArrayList<Edge> edges = new ArrayList<Edge>();
+
+HashMap<String, Float> realDist = new HashMap<String, Float>();
+
+//////////////////////////////////////////////////////////
+
+void setup() {
+  fullScreen();
+  textAlign(CENTER, CENTER);
+
+  createDistricts();     
+  loadRealDistances();   
+  connectAllToAll();     // 703 edges
+}
+
+//////////////////////////////////////////////////////////
+
+void draw() {
+  background(20);
+
+  for (Edge e : edges) {
+
+    stroke(80,80,80,40);
+    strokeWeight(1);
+    line(e.a.x, e.a.y, e.b.x, e.b.y);
+
+    float mx = (e.a.x + e.b.x)/2;
+    float my = (e.a.y + e.b.y)/2;
+
+    fill(200);
+    textSize(6);
+    text(int(e.weight), mx, my);
+  }
+
+  for (Node n : nodes) n.display();
+}
+
+//////////////////////////////////////////////////////////
+
+class Node {
+  String name;
+  float x,y;
+
+  Node(String n,float x,float y){
+    name=n;
+    this.x=x;
+    this.y=y;
+  }
+
+  void display(){
+    fill(0,150,255);
+    ellipse(x,y,18,18);
+    fill(255);
+    textSize(8);
+    text(name,x,y+14);
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+class Edge {
+  Node a,b;
+  float weight;
+
+  Edge(Node a,Node b){
+    this.a=a;
+    this.b=b;
+
+    String k1=a.name+"-"+b.name;
+    String k2=b.name+"-"+a.name;
+
+    // 🔥 REAL DATA FIRST
+    if(realDist.containsKey(k1)) {
+      weight = realDist.get(k1);
+    }
+    else if(realDist.containsKey(k2)) {
+      weight = realDist.get(k2);
+    }
+    else {
+      weight = geoDistance(a.x,a.y,b.x,b.y);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+// 🌍 GEO DISTANCE (fallback)
+float geoDistance(float x1,float y1,float x2,float y2){
+
+  float lat1 = y1 * 0.01;
+  float lon1 = x1 * 0.01;
+  float lat2 = y2 * 0.01;
+  float lon2 = x2 * 0.01;
+
+  float dlat = radians(lat2-lat1);
+  float dlon = radians(lon2-lon1);
+
+  float a = sin(dlat/2)*sin(dlat/2) +
+            cos(radians(lat1))*cos(radians(lat2))*
+            sin(dlon/2)*sin(dlon/2);
+
+  float c = 2 * atan2(sqrt(a), sqrt(1-a));
+
+  return 6371 * c;
+}
+
+//////////////////////////////////////////////////////////
+
+void connectAllToAll(){
+  for(int i=0;i<nodes.size();i++){
+    for(int j=i+1;j<nodes.size();j++){
+      edges.add(new Edge(nodes.get(i),nodes.get(j)));
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+void createDistricts(){
+
+  addNode("Ariyalur",650,520);
+  addNode("Chengalpattu",850,250);
+  addNode("Chennai",900,120);
+  addNode("Coimbatore",300,480);
+  addNode("Cuddalore",760,380);
+  addNode("Dharmapuri",520,320);
+  addNode("Dindigul",550,630);
+  addNode("Erode",420,410);
+  addNode("Kallakurichi",680,360);
+  addNode("Kanchipuram",820,200);
+  addNode("Kanyakumari",600,900);
+  addNode("Karur",520,460);
+  addNode("Krishnagiri",550,280);
+  addNode("Madurai",600,680);
+  addNode("Mayiladuthurai",780,600);
+  addNode("Nagapattinam",800,640);
+  addNode("Namakkal",500,410);
+  addNode("Nilgiris",280,420);
+  addNode("Perambalur",600,500);
+  addNode("Pudukkottai",650,630);
+  addNode("Ramanathapuram",720,760);
+  addNode("Ranipet",700,220);
+  addNode("Salem",500,360);
+  addNode("Sivaganga",650,700);
+  addNode("Tenkasi",500,780);
+  addNode("Thanjavur",700,580);
+  addNode("Theni",520,680);
+  addNode("Thoothukudi",650,850);
+  addNode("Tiruchirappalli",560,520);
+  addNode("Tirunelveli",550,830);
+  addNode("Tirupathur",600,240);
+  addNode("Tiruppur",360,440);
+  addNode("Tiruvallur",860,150);
+  addNode("Tiruvannamalai",650,300);
+  addNode("Tiruvarur",740,600);
+  addNode("Vellore",650,220);
+  addNode("Viluppuram",720,330);
+  addNode("Virudhunagar",580,740);
+}
+
+//////////////////////////////////////////////////////////
+
+void addNode(String n,float x,float y){
+  nodes.add(new Node(n,x,y));
+}
+
+//////////////////////////////////////////////////////////
+
+void loadRealDistances(){
+
+  // 🔥 REAL WEB DISTANCES
+
+  realDist.put("Chennai-Coimbatore",428f);
+  realDist.put("Chennai-Madurai",460f);
+  realDist.put("Chennai-Tirunelveli",631f);
+
+  realDist.put("Coimbatore-Madurai",269f);
+  realDist.put("Madurai-Tiruchirappalli",142f);
+
+  realDist.put("Madurai-Salem",191f);
+  realDist.put("Coimbatore-Erode",91f);
+
+  realDist.put("Tiruchirappalli-Tirunelveli",255f);
+}
