@@ -1,0 +1,165 @@
+import java.util.*;
+
+ArrayList<Node> nodes = new ArrayList<Node>();
+ArrayList<Edge> edges = new ArrayList<Edge>();
+
+HashMap<String, Float> realDist = new HashMap<String, Float>();
+
+//////////////////////////////////////////////////////////
+
+void setup() {
+  fullScreen();
+  textAlign(CENTER, CENTER);
+
+  createMuruganTemples();   // 🔱 Nodes
+  loadRealDistances();      // 📏 Real distances
+  connectAllToAll();        // 🔗 Fully connected graph
+}
+
+//////////////////////////////////////////////////////////
+
+void draw() {
+  background(20);
+
+  // DRAW EDGES
+  for (Edge e : edges) {
+
+    stroke(80,80,80,40);
+    strokeWeight(1);
+    line(e.a.x, e.a.y, e.b.x, e.b.y);
+
+    float mx = (e.a.x + e.b.x)/2;
+    float my = (e.a.y + e.b.y)/2;
+
+    fill(255,200,0);
+    textSize(10);
+    text(int(e.weight) + " km", mx, my);
+  }
+
+  // DRAW NODES
+  for (Node n : nodes) n.display();
+}
+
+//////////////////////////////////////////////////////////
+
+class Node {
+  String name;
+  float x,y;
+
+  Node(String n,float x,float y){
+    name=n;
+    this.x=x;
+    this.y=y;
+  }
+
+  void display(){
+    fill(0,150,255);
+    ellipse(x,y,22,22);
+
+    fill(255);
+    textSize(12);
+    text(name,x,y+18);
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+class Edge {
+  Node a,b;
+  float weight;
+
+  Edge(Node a,Node b){
+    this.a=a;
+    this.b=b;
+
+    String k1=a.name+"-"+b.name;
+    String k2=b.name+"-"+a.name;
+
+    if(realDist.containsKey(k1)) {
+      weight = realDist.get(k1);
+    }
+    else if(realDist.containsKey(k2)) {
+      weight = realDist.get(k2);
+    }
+    else {
+      weight = geoDistance(a.x,a.y,b.x,b.y);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+// 🌍 GEO DISTANCE (fallback)
+float geoDistance(float x1,float y1,float x2,float y2){
+
+  float lat1 = y1 * 0.01;
+  float lon1 = x1 * 0.01;
+  float lat2 = y2 * 0.01;
+  float lon2 = x2 * 0.01;
+
+  float dlat = radians(lat2-lat1);
+  float dlon = radians(lon2-lon1);
+
+  float a = sin(dlat/2)*sin(dlat/2) +
+            cos(radians(lat1))*cos(radians(lat2))*
+            sin(dlon/2)*sin(dlon/2);
+
+  float c = 2 * atan2(sqrt(a), sqrt(1-a));
+
+  return 6371 * c;
+}
+
+//////////////////////////////////////////////////////////
+
+void connectAllToAll(){
+  for(int i=0;i<nodes.size();i++){
+    for(int j=i+1;j<nodes.size();j++){
+      edges.add(new Edge(nodes.get(i),nodes.get(j)));
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////
+
+// 🔱 ARUPADAI VEEDU NODES
+void createMuruganTemples(){
+
+  addNode("Tirupparankunram",600,650);
+  addNode("Tiruchendur",650,850);
+  addNode("Palani",520,600);
+  addNode("Swamimalai",700,580);
+  addNode("Thiruthani",850,200);
+  addNode("Pazhamudircholai",620,670);
+}
+
+//////////////////////////////////////////////////////////
+
+void addNode(String n,float x,float y){
+  nodes.add(new Node(n,x,y));
+}
+
+//////////////////////////////////////////////////////////
+
+// 📏 REAL DISTANCES (km)
+void loadRealDistances(){
+
+  realDist.put("Tirupparankunram-Pazhamudircholai",25f);
+  realDist.put("Tirupparankunram-Palani",120f);
+  realDist.put("Tirupparankunram-Tiruchendur",170f);
+  realDist.put("Tirupparankunram-Swamimalai",200f);
+  realDist.put("Tirupparankunram-Thiruthani",480f);
+
+  realDist.put("Pazhamudircholai-Palani",110f);
+  realDist.put("Pazhamudircholai-Tiruchendur",180f);
+  realDist.put("Pazhamudircholai-Swamimalai",210f);
+  realDist.put("Pazhamudircholai-Thiruthani",490f);
+
+  realDist.put("Palani-Tiruchendur",240f);
+  realDist.put("Palani-Swamimalai",160f);
+  realDist.put("Palani-Thiruthani",400f);
+
+  realDist.put("Tiruchendur-Swamimalai",250f);
+  realDist.put("Tiruchendur-Thiruthani",600f);
+
+  realDist.put("Swamimalai-Thiruthani",300f);
+}
